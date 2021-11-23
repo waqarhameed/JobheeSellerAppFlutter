@@ -8,7 +8,9 @@ class CompleteProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up'),
+        backgroundColor: Colors.pink,
+        title: Text("Complete Profile"),
+        centerTitle: true,
       ),
       body: Body(),
     );

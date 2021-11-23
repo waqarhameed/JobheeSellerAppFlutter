@@ -4,9 +4,48 @@ import '../../../size_config.dart';
 import 'sign_form.dart';
 
 class Body extends StatelessWidget {
+  // Future<bool> _onWillPop() async {
+  //   return (await showDialog(
+  //         context: this.context,
+  //         builder: (context) => new AlertDialog(
+  //           title: new Text('Are you sure?'),
+  //           content: new Text('Do you want to exit an App'),
+  //           actions: <Widget>[
+  //             TextButton(
+  //               onPressed: () => Navigator.of(context).pop(false),
+  //               child: new Text('No'),
+  //             ),
+  //             TextButton(
+  //               onPressed: () => Navigator.of(context).pop(true),
+  //               child: new Text('Yes'),
+  //             ),
+  //           ],
+  //         ),
+  //       )) ??
+  //       false;
+  // }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    DateTime pre_backPress = DateTime.now();
+
+    return WillPopScope(
+      onWillPop: () async {
+        final timeGap = DateTime.now().difference(pre_backPress);
+        final cantExit = timeGap >= Duration(seconds: 2);
+        pre_backPress = DateTime.now();
+        if (cantExit) {
+          //show snack bar
+          final snack = SnackBar(
+            content: Text('Press Back button again to Exit'),
+            duration: Duration(seconds: 2),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snack);
+          return false;
+        } else {
+          return true;
+        }
+      },
       child: SizedBox(
         width: double.infinity,
         child: Padding(
@@ -15,7 +54,7 @@ class Body extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                SizedBox(height: SizeConfig.screenHeight * 0.04),
+                SizedBox(height: SizeConfig.screenHeight * 0.1),
                 Text(
                   "Welcome Back",
                   style: TextStyle(
