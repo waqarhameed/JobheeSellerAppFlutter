@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:jobheeseller/constants.dart';
 
 class Body extends StatefulWidget {
   const Body({Key key}) : super(key: key);
@@ -8,19 +13,65 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
+  //GlobalKey<_BodyState> _globalKey = GlobalKey();
+
   bool _status = true;
   final FocusNode myFocusNode = FocusNode();
+
+  String firstName;
+  String number;
+  String description;
+  ImagePicker image = ImagePicker();
+  File file;
+  String url = "";
+  bool visible = true;
+  TextEditingController _addressEditingController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
   }
 
+  getImage() async {
+    var img = await image.pickImage(source: ImageSource.gallery);
+    setState(() {
+      file = File(img.path);
+    });
+  }
+
+  saveUser() async {
+    var imageFile =
+        await FirebaseStorage.instance.ref().child("path").child("/.jpg");
+    UploadTask task = imageFile.putFile(file);
+    //TaskSnapshot snapshot = await task;
+    //for downloading
+    // url = await snapshot.ref.getDownloadURL();
+    // await FirebaseFirestore.instance
+    //     .collection("images")
+    //     .doc()
+    //     .set({"imageUrl": url});
+    // print(url);
+  }
+
+  buildShowDialog(BuildContext context) {
+    return showDialog(
+        barrierColor: kPrimaryColor,
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.grey[100],
-        body: Container(
+        body: Center(
           child: ListView(
             children: <Widget>[
               Column(
@@ -28,9 +79,11 @@ class _BodyState extends State<Body> {
                   Container(
                     height: 200.0,
                     color: Colors.white,
-                    child: Column(
-                      children: <Widget>[
-                        Padding(
+                    child: GestureDetector(
+                        onTap: () {
+                          getImage();
+                        },
+                        child: Padding(
                           padding: EdgeInsets.only(top: 20.0),
                           child: Stack(fit: StackFit.loose, children: <Widget>[
                             Row(
@@ -38,21 +91,20 @@ class _BodyState extends State<Body> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
                                 Container(
-                                    width: 140.0,
-                                    height: 140.0,
-                                    decoration: new BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      image: new DecorationImage(
-                                        image: new ExactAssetImage(
-                                            'assets/images/Profile Image.png'),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    )),
+                                  child: CircleAvatar(
+                                    backgroundImage: AssetImage(
+                                        "assets/images/Profile Image.png"),
+                                    radius: 80,
+                                    foregroundImage: file == null
+                                        ? AssetImage("")
+                                        : FileImage(File(file.path)),
+                                  ),
+                                ),
                               ],
                             ),
                             Padding(
                                 padding:
-                                    EdgeInsets.only(top: 90.0, right: 100.0),
+                                    EdgeInsets.only(top: 120.0, right: 120.0),
                                 child: new Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
@@ -67,9 +119,7 @@ class _BodyState extends State<Body> {
                                   ],
                                 )),
                           ]),
-                        )
-                      ],
-                    ),
+                        )),
                   ),
                   Container(
                     color: Color(0xffFFFFFF),
@@ -95,7 +145,7 @@ class _BodyState extends State<Body> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: <Widget>[
                                       new Text(
-                                        'Parsonal Information',
+                                        'Personal Information',
                                         style: TextStyle(
                                             fontSize: 18.0,
                                             fontWeight: FontWeight.bold),
@@ -135,7 +185,7 @@ class _BodyState extends State<Body> {
                                         return null;
                                       },
                                       onSaved: (String value) {
-                                        // FirstName = value;
+                                        firstName = value;
                                       },
                                     ),
                                   ),
@@ -163,7 +213,7 @@ class _BodyState extends State<Body> {
                                         return null;
                                       },
                                       onSaved: (String value) {
-                                        // FirstName = value;
+                                        number = value;
                                       },
                                     ),
                                   ),
@@ -191,7 +241,7 @@ class _BodyState extends State<Body> {
                                         return null;
                                       },
                                       onSaved: (String value) {
-                                        // FirstName = value;
+                                        description = value;
                                       },
                                     ),
                                   ),
@@ -205,14 +255,22 @@ class _BodyState extends State<Body> {
                                 children: <Widget>[
                                   new Flexible(
                                     child: TextFormField(
+                                      onTap: () {
+                                        String _addressEditingController =
+                                            "jjj";
+                                      },
+                                      controller: _addressEditingController,
                                       maxLength: 15,
                                       enabled: !_status,
                                       autofocus: !_status,
                                       decoration: InputDecoration(
-                                          prefixIcon:
-                                              Icon(Icons.water_damage_rounded),
-                                          border: OutlineInputBorder(),
-                                          labelText: 'Address'),
+                                        prefixIcon:
+                                            Icon(Icons.water_damage_rounded),
+                                        border: OutlineInputBorder(),
+                                        hintText: 'Address',
+                                        labelText: _addressEditingController
+                                            .toString(),
+                                      ),
                                       validator: (String value) {
                                         if (value == null || value.isEmpty) {
                                           return 'This field cannot be empty';
@@ -263,6 +321,9 @@ class _BodyState extends State<Body> {
                 onPressed: () {
                   setState(() {
                     _status = true;
+                    buildShowDialog(context);
+                    saveUser();
+                    Navigator.of(context).pop();
                     FocusScope.of(context).requestFocus(new FocusNode());
                   });
                 },
@@ -288,7 +349,6 @@ class _BodyState extends State<Body> {
                     FocusScope.of(context).requestFocus(new FocusNode());
                   });
                 },
-
               )),
             ),
             flex: 2,

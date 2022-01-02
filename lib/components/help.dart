@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants.dart';
+
 class Help extends StatefulWidget {
   const Help({Key key}) : super(key: key);
 
@@ -12,7 +14,7 @@ class _HelpState extends State<Help> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.pink,
+        backgroundColor: kPrimaryColor,
         title: Text("Customer Support"),
         centerTitle: true,
       ),);

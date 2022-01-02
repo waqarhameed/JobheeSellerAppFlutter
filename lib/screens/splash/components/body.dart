@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:jobheeseller/screens/home/home_screen.dart';
-import 'package:jobheeseller/screens/login_success/login_success_screen.dart';
 import 'package:jobheeseller/screens/otp/otp_registration.dart';
-import 'package:jobheeseller/screens/sign_in/sign_in_screen.dart';
+
+import '../../../components/default_button.dart';
 
 // This is the best practice
 import '../../../constants.dart';
 import '../../../size_config.dart';
 import '../components/splash_content.dart';
-import '../../../components/default_button.dart';
 
 class Body extends StatefulWidget {
   @override
@@ -23,7 +21,7 @@ class _BodyState extends State<Body> {
       "image": "assets/images/splash_1.png"
     },
     {
-      "text": "We help people conect with store \naround Pakistan",
+      "text": "We help people connect with store \naround Pakistan",
       "image": "assets/images/splash_2.png"
     },
     {
@@ -74,9 +72,7 @@ class _BodyState extends State<Body> {
                       text: "Continue",
                       press: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (c) => LoginSuccessScreen()),
-                          //OtpRegistration()),
+                          MaterialPageRoute(builder: (c) => OtpRegistration()),
                         );
                       },
                     ),

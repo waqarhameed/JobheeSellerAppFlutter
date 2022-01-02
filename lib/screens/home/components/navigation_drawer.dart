@@ -8,17 +8,9 @@ import 'package:jobheeseller/constants.dart';
 import 'package:jobheeseller/screens/complete_profile/complete_profile_screen.dart';
 import 'package:jobheeseller/screens/home/components/user_page.dart';
 import 'package:jobheeseller/screens/payments/your_payments.dart';
-import 'package:jobheeseller/screens/sign_in/sign_in_screen.dart';
+import 'package:jobheeseller/screens/splash/splash_screen.dart';
 
 class NavigationDrawer extends StatelessWidget {
-//   //const NavigationDrawer({Key? key}) : super(key: key);
-//
-//   @override
-//   _NavigationDrawerState createState() => _NavigationDrawerState();
-// }
-//
-// class _NavigationDrawerState extends State<NavigationDrawer> {
-
   final padding = EdgeInsets.symmetric(horizontal: 20);
   final _auth = FirebaseAuth.instance;
 
@@ -31,7 +23,7 @@ class NavigationDrawer extends StatelessWidget {
 
     return Drawer(
       child: Container(
-        color: kPrimaryLightColor,
+        color: kPrimaryWhiteColor,
         child: ListView(
           children: [
             buildHeader(
@@ -52,10 +44,11 @@ class NavigationDrawer extends StatelessWidget {
             ),
             Container(
               padding: padding,
+              color: kPrimaryWhiteColor,
               child: Column(
                 children: [
                   Divider(
-                    color: Colors.white,
+                    color: Colors.black,
                     height: 2,
                   ),
                   const SizedBox(height: 10),
@@ -86,7 +79,7 @@ class NavigationDrawer extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Divider(
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                   SizedBox(height: 10),
                   buildMenuItem(
@@ -99,7 +92,7 @@ class NavigationDrawer extends StatelessWidget {
                     icon: Icons.logout,
                     onClicked: () => selectedItem(context, 6),
                   ),
-                  Divider(color: Colors.white),
+                  Divider(color: Colors.black),
                   SizedBox(height: 10),
                   Container(
                     child: Text(
@@ -129,22 +122,23 @@ class NavigationDrawer extends StatelessWidget {
       InkWell(
         onTap: onClicked,
         child: Container(
+          color: kPrimaryWhiteColor,
           padding: padding.add(EdgeInsets.symmetric(vertical: 40)),
           child: Row(
             children: [
-              CircleAvatar(radius: 30, backgroundImage: NetworkImage(urlImage)),
+              CircleAvatar(radius: 50, backgroundImage: NetworkImage(urlImage)),
               SizedBox(width: 20),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                    style: TextStyle(fontSize: 20, color: Colors.black),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     email,
-                    style: TextStyle(fontSize: 14, color: Colors.white),
+                    style: TextStyle(fontSize: 14, color: Colors.black),
                   ),
                 ],
               ),
@@ -212,6 +206,6 @@ class NavigationDrawer extends StatelessWidget {
 
   void onTapped(context) async {
     await _auth.signOut();
-    Navigator.pushNamed(context, SignInScreen.routeName);
+    Navigator.pushNamed(context, SplashScreen.routeName);
   }
 }

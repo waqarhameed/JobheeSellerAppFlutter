@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:jobheeseller/components/default_button.dart';
-import 'package:jobheeseller/screens/sign_in/sign_in_screen.dart';
+import 'package:jobheeseller/screens/home/home_screen.dart';
+import 'package:jobheeseller/screens/user_register/user_registration_screen.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 
-import '../../constants.dart';
-import '../../size_config.dart';
+import '../../../constants.dart';
+import '../../../size_config.dart';
 
 class OtpVerification extends StatefulWidget {
   static String routeName = "/otp";
@@ -88,10 +88,8 @@ class _OtpVerificationState extends State<OtpVerification> {
                         .then(
                       (value) {
                         if (value.user != null) {
-                          Navigator.pushNamed(
-                            context,
-                            SignInScreen.routeName,
-                          );
+                          Navigator.of(context).push(
+                              MaterialPageRoute(builder: (c) => HomeScreen()));
                         }
                       },
                     );
@@ -109,6 +107,8 @@ class _OtpVerificationState extends State<OtpVerification> {
             GestureDetector(
               onTap: () {
                 // OTP code resend
+                buildTimer();
+                verifyPhoneNumber();
               },
               child: Text(
                 "Resend OTP Code",
@@ -127,8 +127,8 @@ class _OtpVerificationState extends State<OtpVerification> {
       children: [
         Text("This code will expired in "),
         TweenAnimationBuilder(
-          tween: Tween(begin: 50.0, end: 0.0),
-          duration: Duration(seconds: 50),
+          tween: Tween(begin: 30.0, end: 0.0),
+          duration: Duration(seconds: 30),
           builder: (_, dynamic value, child) => Text(
             "00:${value.toInt()}",
             style: TextStyle(color: kPrimaryColor),
@@ -144,9 +144,11 @@ class _OtpVerificationState extends State<OtpVerification> {
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential).then((value) async {
             if (value.user != null) {
+              // Navigator.of(context)
+              //     .push(MaterialPageRoute(builder: (c) => HomeScreen()));
               Navigator.pushNamed(
                 context,
-                SignInScreen.routeName,
+                UserRegisterScreen.routeName,
               );
             }
           });
@@ -154,15 +156,15 @@ class _OtpVerificationState extends State<OtpVerification> {
         },
         verificationFailed: (FirebaseAuthException e) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(e.message.toString()),
+            content: Text('Unable to verify pin code'),
             duration: Duration(seconds: 6),
           ));
-          print(" unable to code send");
+          print(" unable to code send ");
         },
         codeSent: (String vId, int resendCode) {
           setState(() {
             verificationCode = vId;
-            print(" code send" + verificationCode);
+            print("code send " + verificationCode);
           });
         },
         codeAutoRetrievalTimeout: (String vId) {
@@ -171,12 +173,6 @@ class _OtpVerificationState extends State<OtpVerification> {
             print(" Time out hey");
           });
         },
-        timeout: Duration(seconds: 60));
-  }
-
-  @override
-  void dispose() {
-    _pinOtpCodController.dispose();
-    _pinOtpCodeFocus.dispose();
+        timeout: Duration(seconds: 30));
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../constants.dart';
 import 'components/body.dart';
 
 class CompleteProfileScreen extends StatelessWidget {
@@ -8,7 +9,7 @@ class CompleteProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.pink,
+        backgroundColor: kPrimaryColor,
         title: Text("Complete Profile"),
         centerTitle: true,
       ),

@@ -16,6 +16,7 @@ class _PaymentsState extends State<Payments> {
         title: Text("Payments"),
         centerTitle: true,
       ),
+
     );
   }
 }

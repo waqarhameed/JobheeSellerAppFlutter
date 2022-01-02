@@ -3,7 +3,7 @@ import 'package:jobheeseller/components/custom_surfix_icon.dart';
 import 'package:jobheeseller/components/form_error.dart';
 import 'package:jobheeseller/helper/keyboard.dart';
 import 'package:jobheeseller/screens/forgot_password/forgot_password_screen.dart';
-import 'package:jobheeseller/screens/login_success/login_success_screen.dart';
+import 'package:jobheeseller/services/services.dart';
 import '../../../components/default_button.dart';
 import '../../../constants.dart';
 import '../../../size_config.dart';
@@ -18,6 +18,7 @@ class _SignFormState extends State<SignForm> {
   String email;
   String password;
   bool remember = false;
+  Service service = Service();
   final List<String> errors = [];
 
   void addError({String error}) {
@@ -76,7 +77,7 @@ class _SignFormState extends State<SignForm> {
                 _formKey.currentState.save();
                 // if all are valid then go to success screen
                 KeyboardUtil.hideKeyboard(context);
-                Navigator.pushNamed(context, LoginSuccessScreen.routeName);
+                service.loginUser(email, password, context);
               }
             },
           ),

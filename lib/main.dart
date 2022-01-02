@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:jobheeseller/routes.dart';
 import 'package:jobheeseller/screens/home/home_screen.dart';
-import 'package:jobheeseller/screens/sign_in/sign_in_screen.dart';
 import 'package:jobheeseller/screens/splash/splash_screen.dart';
 import 'package:jobheeseller/theme.dart';
 
@@ -59,7 +58,7 @@ class _InitializerWidgetState extends State<InitializerWidget> {
             ),
           )
         : _user == null
-            ? SignInScreen()
+            ? SplashScreen()
             : HomeScreen();
   }
 }

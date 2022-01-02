@@ -11,7 +11,9 @@ class _CompletedOrdersState extends State<CompletedOrders> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+           body: Center(
+             child:  Text("No completed orders yet"),
+           ),
     );
   }
 }

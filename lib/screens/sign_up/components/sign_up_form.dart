@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jobheeseller/components/custom_surfix_icon.dart';
 import 'package:jobheeseller/components/default_button.dart';
 import 'package:jobheeseller/components/form_error.dart';
-import 'package:jobheeseller/screens/complete_profile/complete_profile_screen.dart';
+import 'package:jobheeseller/services/Services.dart';
 
 import '../../../constants.dart';
 import '../../../size_config.dart';
@@ -18,6 +18,7 @@ class _SignUpFormState extends State<SignUpForm> {
   String password;
   String conform_password;
   bool remember = false;
+  Service service = Service();
   final List<String> errors = [];
 
   void addError({String error}) {
@@ -53,7 +54,7 @@ class _SignUpFormState extends State<SignUpForm> {
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
                 // if all are valid then go to success screen
-                Navigator.pushNamed(context, CompleteProfileScreen.routeName);
+                service.createUser(email, password, context);
               }
             },
           ),
@@ -87,7 +88,7 @@ class _SignUpFormState extends State<SignUpForm> {
       decoration: InputDecoration(
         labelText: "Confirm Password",
         hintText: "Re-enter your password",
-        // If  you are using latest version of flutter then lable text and hint text shown like this
+        // If  you are using latest version of flutter then label text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
         suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/Lock.svg"),

@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:jobheeseller/constants.dart';
-import 'package:jobheeseller/screens/otp/otp_verification.dart';
+import 'package:jobheeseller/screens/otp/components/otp_verification.dart';
 import 'package:jobheeseller/size_config.dart';
 
 class OtpRegistration extends StatefulWidget {

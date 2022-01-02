@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../constants.dart';
+
 class ShareWithFriends extends StatefulWidget {
   //const ShareWithFriends({Key key}) : super(key: key);
 
@@ -13,7 +15,7 @@ class _ShareWithFriendsState extends State<ShareWithFriends> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.pink,
+        backgroundColor: kPrimaryColor,
         title: Text("Share With Friends"),
         centerTitle: true,
       ),);
