@@ -88,8 +88,8 @@ class _OtpVerificationState extends State<OtpVerification> {
                         .then(
                       (value) {
                         if (value.user != null) {
-                          Navigator.of(context).push(
-                              MaterialPageRoute(builder: (c) => HomeScreen()));
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (c) => UserRegisterScreen()));
                         }
                       },
                     );
@@ -107,8 +107,8 @@ class _OtpVerificationState extends State<OtpVerification> {
             GestureDetector(
               onTap: () {
                 // OTP code resend
-                buildTimer();
                 verifyPhoneNumber();
+                buildTimer();
               },
               child: Text(
                 "Resend OTP Code",
@@ -144,12 +144,8 @@ class _OtpVerificationState extends State<OtpVerification> {
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential).then((value) async {
             if (value.user != null) {
-              // Navigator.of(context)
-              //     .push(MaterialPageRoute(builder: (c) => HomeScreen()));
-              Navigator.pushNamed(
-                context,
-                UserRegisterScreen.routeName,
-              );
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (c) => HomeScreen()));
             }
           });
           print(" verification completed in  ");

@@ -3,12 +3,14 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geocode/geocode.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:jobheeseller/components/custom_snake_bar.dart';
 import 'package:jobheeseller/components/custom_surfix_icon.dart';
 import 'package:jobheeseller/components/default_button.dart';
 import 'package:jobheeseller/screens/home/home_screen.dart';
@@ -70,16 +72,15 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
-    getCurrentUser();
-    token = getDeviceToken();
     super.initState();
+    getCurrentUser();
+    getCurrentLocation();
   }
 
   getCurrentUser() async {
     final User user = await _auth.currentUser;
     final uid = user.uid;
     uuid = uid;
-    //'i0KEWOg8cRT1JLMIbGlMTv3yao82'
   }
 
   @override
@@ -117,7 +118,8 @@ class _BodyState extends State<Body> {
                                           "assets/images/Profile Image.png"),
                                       radius: 80,
                                       foregroundImage: file == null
-                                          ? ''
+                                          ? AssetImage(
+                                              "assets/images/Profile Image.png")
                                           : FileImage(File(file.path)),
                                       onForegroundImageError:
                                           (exception, stackTrace) {
@@ -174,8 +176,8 @@ class _BodyState extends State<Body> {
                               showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                        title: Text("My title"),
-                                        content: Text("This is my message."),
+                                        title: Text("Message"),
+                                        content: Text("please attach your pic"),
                                         actions: [
                                           TextButton(
                                               onPressed: () {
@@ -191,13 +193,13 @@ class _BodyState extends State<Body> {
                               uploadImageFileToDatabase();
 
                               if (_uploadedFileURL != null) {
+                                setState(() {
+                                  _load = true;
+                                });
                                 uploadDataToFirebaseDatabase(_uploadedFileURL);
+                                Navigator.pushNamed(
+                                    context, HomeScreen.routeName);
                               }
-                              setState(() {
-                                _load = false;
-                              });
-                              Navigator.pushNamed(
-                                  context, HomeScreen.routeName);
                             }
                           },
                         ),
@@ -359,8 +361,12 @@ class _BodyState extends State<Body> {
                             getCurrentLocation();
                           } else {
                             _editingControllerMapAddress.text = myLocation;
+                            Future.delayed(Duration(milliseconds: 2000));
                             popAlert(context);
                           }
+                        },
+                        onChanged: (value) {
+                          _showMyAddress.text = value;
                         },
                         decoration: InputDecoration(
                           border: InputBorder.none,
@@ -395,7 +401,7 @@ class _BodyState extends State<Body> {
   // creating and getting location map
   onMapCreated(GoogleMapController ctr) async {
     _mapController = ctr;
-    getCurrentLocation();
+    //getCurrentLocation();
   }
 
   // getting user current location
@@ -439,8 +445,10 @@ class _BodyState extends State<Body> {
           } catch (e) {
             print('Reverse Geo coding exception = ' + e.toString());
           }
-          _showMyAddress.text = myLocation;
-          setState(() {});
+
+          setState(() {
+            _showMyAddress.text = myLocation;
+          });
           updateMarker(newLocalData);
         }
       });
@@ -453,7 +461,9 @@ class _BodyState extends State<Body> {
 
   // displaying marker on map current location
 
-  void updateMarker(LocationData newLocalData) {
+  void updateMarker(LocationData newLocalData) async {
+    final bitmapIcon = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(size: Size(48, 48)), 'assets/icons/geo-alt.svg');
     LatLng latLng = LatLng(newLocalData.latitude, newLocalData.longitude);
     this.setState(() {
       marker = Marker(
@@ -463,7 +473,7 @@ class _BodyState extends State<Body> {
           draggable: false,
           zIndex: 2,
           anchor: Offset(0.6, 0.9),
-          icon: BitmapDescriptor.defaultMarker);
+          icon: bitmapIcon);
     });
   }
 
@@ -496,35 +506,54 @@ class _BodyState extends State<Body> {
     Navigator.of(context).pop();
   }
 
-  uploadImageFileToDatabase() {
+  uploadImageFileToDatabase() async {
+    String url;
+    // var imageFile =
+    // await FirebaseStorage.instance.ref().child("path").child("/.jpg");
+    // UploadTask task = imageFile.putFile(file);
+    // TaskSnapshot snapshot = await task;
+    // //for downloading
+    // String url = await snapshot.ref.getDownloadURL();
+    // await FirebaseFirestore.instance
+    //     .collection("images")
+    //     .doc()
+    //     .set({"imageUrl": url});
+    // print(url);
     final String fileName = path.basename(file.path);
     firebase_storage.Reference reference = firebase_storage
         .FirebaseStorage.instance
         .ref()
         .child('PicUrl')
         .child(fileName);
-    final metadata = firebase_storage.SettableMetadata(
-        contentType: 'image/jpg',
-        customMetadata: {'picked-file-path': file.path});
-    print('reference = ' +
-        reference.toString() +
-        'metadata = ' +
-        metadata.toString() +
-        'file =' +
-        file.toString() +
-        'file Path= ' +
-        file.path);
-    firebase_storage.UploadTask uploadTask = reference.putFile(file, metadata);
-    Future.value(uploadTask);
-    print('uploadTask == ' + Future.value(uploadTask).toString());
-    String url;
-    reference.getDownloadURL().then((value) => url = value);
+    UploadTask task2 = reference.putFile(file);
+    TaskSnapshot snapshot2 = await task2;
+    snapshot2.ref
+        .getDownloadURL()
+        .whenComplete(() => print('image url +>>>>' + url));
+    // final metadata = firebase_storage.SettableMetadata(
+    //     contentType: 'image/jpg',
+    //     customMetadata: {'picked-file-path': file.path});
+
+    // reference.putFile(file, metadata).whenComplete(
+    //       () => setState(() {
+    //         _load = false;
+    //       }),
+    //     );
+
+    // try {
+    //   reference.getDownloadURL().then((value) => url = value);
+    // } catch (e) {
+    //   print('download image');
+    //   print(e);
+    //   print('download image');
+    // }
+
     setState(() {
       _uploadedFileURL = url;
     });
   }
 
-  void uploadDataToFirebaseDatabase(String url) async {
+  uploadDataToFirebaseDatabase(String url) async {
     final DateTime date1 = DateTime.now();
     final timestamp1 = date1.millisecondsSinceEpoch;
     final DateTime datetime =
@@ -532,30 +561,62 @@ class _BodyState extends State<Body> {
     String dateT = datetime.toString();
     String latI = lat.toString();
     String lngI = lng.toString();
+    print('Name =' +
+        _editingControllerName.text +
+        '| businessType =' +
+        _editingControllerBusType.text +
+        '| businessDescription =' +
+        _editingControllerBusDescription.text +
+        '| Address =' +
+        _editingControllerMapAddress.text +
+        '| joinTimeStamp =' +
+        dateT +
+        '|LatLng =' +
+        latI +
+        ' , ' +
+        lngI +
+        '| PicUrl =' +
+        url +
+        '| Fcm Token =' +
+        token);
+    try {
+      await _firebaseDatabase.child(uuid).set({
+        'name': _editingControllerName.text,
+        'businessType': _editingControllerBusType.text,
+        'businessDescription': _editingControllerBusDescription.text,
+        'address': _editingControllerMapAddress.text,
+        'completeOrders': '0',
+        'onlineStatus': 'online',
+        'blockByAdmin': '0',
+        'joinTimeStamp': dateT,
+        'lat': latI,
+        'lng': lngI,
+        'picUrl': url,
+        'fcm': 'token',
+        'uuid': uuid
+      });
+      MyInfoBar.success(
+          message: '', icon: Icon(Icons.message), context: context);
+      setState(() {
+        _load = false;
+      });
+    } catch (e) {
+      print('upload user');
+      print(e);
+      print('upload user');
+    }
+  }
 
-    //String fcmToken = await FirebaseMessaging.instance.getAPNSToken();
-    await _firebaseDatabase.child(uuid).set({
-      'name': _editingControllerName.text,
-      'businessType': _editingControllerBusType.text,
-      'businessDescription': _editingControllerBusDescription.text,
-      'address': _editingControllerMapAddress.text,
-      'completeOrders': '0',
-      'onlineStatus': 'online',
-      'blockByAdmin': '0',
-      'joinTimeStamp': dateT,
-      'lat': latI,
-      'lng': lngI,
-      'picUrl': url,
-      'fcm': token,
-      'uuid': uuid
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    token = getDeviceToken();
   }
 
   getDeviceToken() {
     FirebaseMessaging.instance.getToken().then((value) {
-      setState(() {
-        token = value;
-      });
+      print('Last Token =' + value.toString());
+      return value;
     });
   }
 

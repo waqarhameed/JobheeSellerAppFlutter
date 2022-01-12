@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -43,14 +44,14 @@ class _BodyState extends State<Body> {
     var imageFile =
         await FirebaseStorage.instance.ref().child("path").child("/.jpg");
     UploadTask task = imageFile.putFile(file);
-    //TaskSnapshot snapshot = await task;
+    TaskSnapshot snapshot = await task;
     //for downloading
-    // url = await snapshot.ref.getDownloadURL();
-    // await FirebaseFirestore.instance
-    //     .collection("images")
-    //     .doc()
-    //     .set({"imageUrl": url});
-    // print(url);
+    url = await snapshot.ref.getDownloadURL();
+    await FirebaseFirestore.instance
+        .collection("images")
+        .doc()
+        .set({"imageUrl": url});
+    print(url);
   }
 
   buildShowDialog(BuildContext context) {

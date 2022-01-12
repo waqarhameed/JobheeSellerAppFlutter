@@ -40,7 +40,9 @@ dependencies:
   cloud_firestore: ^3.1.0
   firebase_storage: ^10.2.4
   firebase_database: ^9.0.4
-  firebase_messaging: ^10.0.0
+  firebase_messaging: ^11.2.5
+  flutter_local_notifications: ^9.1.5
+  firebase_app_check: ^0.0.6+4
   flutter_bloc: ^7.3.1
   pinput: ^1.2.1
   path: ^1.8.0
@@ -48,12 +50,16 @@ dependencies:
   persistent_bottom_nav_bar: ^4.0.2
   font_awesome_flutter: ^9.2.0
   flutter_svg: ^0.23.0+1
+  another_flushbar: ^1.10.28
   bubble_bottom_bar: ^1.2.0
   image_picker: ^0.8.4+4
   google_maps_flutter: ^2.1.1
   location: ^4.3.0
   geolocator: ^7.7.1
   geocode: ^1.0.1
+  flutter_native_splash: ^1.3.3
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
