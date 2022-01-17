@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:jobheeseller/components/about_us.dart';
 import 'package:jobheeseller/components/app_updates.dart';
 import 'package:jobheeseller/components/coustom_bottom_nav_bar.dart';
 import 'package:jobheeseller/components/help.dart';
@@ -194,7 +195,7 @@ class NavigationDrawer extends StatelessWidget {
       case 5:
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => CustomBottomNavBar(),
+            builder: (context) => AboutUs(),
           ),
         );
         break;
