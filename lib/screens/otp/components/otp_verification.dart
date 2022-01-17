@@ -33,9 +33,14 @@ class _OtpVerificationState extends State<OtpVerification> {
 
   @override
   void initState() {
-    // TODO: implement initState
+
     super.initState();
     verifyPhoneNumber();
+  }
+  @override
+  void didChangeDependencies() {
+
+    super.didChangeDependencies();
   }
 
   @override
@@ -137,18 +142,19 @@ class _OtpVerificationState extends State<OtpVerification> {
       ],
     );
   }
-
+ //03214577488
   void verifyPhoneNumber() async {
     await _auth.verifyPhoneNumber(
         phoneNumber: "${widget.codeDigits + widget.phone}",
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential).then((value) async {
-            if (value.user != null) {
+            if (_auth.currentUser.uid != null) {
+              print(" verification completed " + value.toString());
               Navigator.of(context)
                   .push(MaterialPageRoute(builder: (c) => HomeScreen()));
             }
           });
-          print(" verification completed in  ");
+          print("verification completed");
         },
         verificationFailed: (FirebaseAuthException e) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(

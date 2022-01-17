@@ -1,22 +1,23 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geocode/geocode.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:jobheeseller/components/custom_snake_bar.dart';
 import 'package:jobheeseller/components/custom_surfix_icon.dart';
 import 'package:jobheeseller/components/default_button.dart';
 import 'package:jobheeseller/screens/home/home_screen.dart';
 import 'package:location/location.dart';
 import 'package:path/path.dart' as path;
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../constants.dart';
 import '../../size_config.dart';
@@ -32,28 +33,29 @@ class _BodyState extends State<Body> {
   DatabaseReference _firebaseDatabase =
       FirebaseDatabase.instance.ref().child(kJob).child(kSeller);
 
-  // final FirebaseAuth _auth = FirebaseAuth.instance;
   String uuid;
   final _formKey = GlobalKey<FormState>();
   final List<String> errors = [];
-  String firstName;
-  String businessType;
-  String busDescription;
-  String mapAddress;
+
+  //String firstName;
+  //String businessType;
+  //String busDescription;
+  // String mapAddress;
   double lat, lng;
 
   Circle circle;
+
   LocationData location;
   Position currentPosition;
   String myLocation;
-
+  Completer<GoogleMapController> _controller = Completer();
+  GoogleMapController _mapController;
   GeoCode geoCode = GeoCode();
   Coordinates coordinates;
   Marker marker;
-  GoogleMapController _mapController;
   Location _locationTracker = Location();
-  FirebaseAuth _auth;
   StreamSubscription _locationSubscription;
+
   TextEditingController _editingControllerMapAddress =
       new TextEditingController();
   TextEditingController _editingControllerName = new TextEditingController();
@@ -63,24 +65,57 @@ class _BodyState extends State<Body> {
       new TextEditingController();
   FirebaseMessaging firebaseMessaging;
   var token;
+  String url;
   bool _load = false;
-  String _uploadedFileURL;
+  var bitmapIcon;
+
   static final CameraPosition initialLocation = CameraPosition(
     target: LatLng(31.524316907751494, 74.34614056040162),
     zoom: 5,
   );
 
+  getMarker() async {
+    ByteData byteData =
+        await DefaultAssetBundle.of(context).load("assets/icons/geo-alt.svg");
+    return byteData.buffer.asUint8List();
+  }
+
   @override
   void initState() {
     super.initState();
     getCurrentUser();
-    getCurrentLocation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    token = getDeviceToken();
+    // Ask for permission
+    askForLocationPermission();
+    // GoogleMap(
+    //   myLocationEnabled: true,
+    //   initialCameraPosition: null,
+    // );
+  }
+
+  askForLocationPermission() async {
+    if (await Permission.locationAlways.request().isGranted) {
+      // Either the permission was already granted before or the user just granted it.
+    } else {
+      await Permission.locationAlways.request();
+    }
   }
 
   getCurrentUser() async {
-    final User user = await _auth.currentUser;
-    final uid = user.uid;
-    uuid = uid;
+    try {
+      var currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        uuid = currentUser.uid;
+        print('Uuid of current user = ' + uuid);
+      }
+    } catch (e) {
+      print('current user error hy+ ' + e);
+    }
   }
 
   @override
@@ -120,7 +155,8 @@ class _BodyState extends State<Body> {
                                       foregroundImage: file == null
                                           ? AssetImage(
                                               "assets/images/Profile Image.png")
-                                          : FileImage(File(file.path)),
+                                          : FileImage(File(file.path),
+                                              scale: 1.0),
                                       onForegroundImageError:
                                           (exception, stackTrace) {
                                         if (exception.toString() == null) {
@@ -171,7 +207,7 @@ class _BodyState extends State<Body> {
                     Padding(
                         child: DefaultButton(
                           text: "continue",
-                          press: () {
+                          press: () async {
                             if (file == null) {
                               showDialog(
                                   context: context,
@@ -190,13 +226,15 @@ class _BodyState extends State<Body> {
                               setState(() {
                                 _load = true;
                               });
-                              uploadImageFileToDatabase();
-
-                              if (_uploadedFileURL != null) {
+                              //start progress bar
+                              String url = await uploadImageFileToDatabase();
+                              if (url != null) {
+                                uploadDataToFirebaseDatabase(url);
+                              } else {
+                                print('upload Data To Firebase Failed');
                                 setState(() {
-                                  _load = true;
+                                  _load = false;
                                 });
-                                uploadDataToFirebaseDatabase(_uploadedFileURL);
                                 Navigator.pushNamed(
                                     context, HomeScreen.routeName);
                               }
@@ -215,7 +253,7 @@ class _BodyState extends State<Body> {
   TextFormField buildFirstNameFormField() {
     return TextFormField(
       controller: _editingControllerName,
-      onSaved: (newValue) => firstName = newValue,
+      //onSaved: (newValue) => firstName = newValue,
       onChanged: (value) {
         if (value.isNotEmpty) {
           removeError(error: kNameNullError);
@@ -233,6 +271,7 @@ class _BodyState extends State<Body> {
       inputFormatters: [FilteringTextInputFormatter.allow(textPattern)],
       decoration: InputDecoration(
         labelText: "First Name",
+        hintText: '',
         floatingLabelBehavior: FloatingLabelBehavior.always,
         suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
@@ -242,7 +281,7 @@ class _BodyState extends State<Body> {
   TextFormField buildBusinessTypeFormField() {
     return TextFormField(
       controller: _editingControllerBusType,
-      onSaved: (newValue) => businessType = newValue,
+      //onSaved: (newValue) => businessType = newValue,
       onChanged: (value) {
         if (value.isNotEmpty) {
           removeError(error: kBusTypeNullError);
@@ -260,6 +299,7 @@ class _BodyState extends State<Body> {
       inputFormatters: [FilteringTextInputFormatter.allow(textPattern)],
       decoration: InputDecoration(
         labelText: "Business Type",
+        hintText: '',
         floatingLabelBehavior: FloatingLabelBehavior.always,
         suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
@@ -269,7 +309,7 @@ class _BodyState extends State<Body> {
   TextFormField buildBusDescriptionFormField() {
     return TextFormField(
       controller: _editingControllerBusDescription,
-      onSaved: (newValue) => busDescription = newValue,
+      //onSaved: (newValue) => busDescription = newValue,
       onChanged: (value) {
         if (value.isNotEmpty) {
           removeError(error: kBusTypeNullError);
@@ -287,6 +327,7 @@ class _BodyState extends State<Body> {
       inputFormatters: [FilteringTextInputFormatter.allow(textPattern)],
       decoration: InputDecoration(
         labelText: "Business Description",
+        hintText: "",
         floatingLabelBehavior: FloatingLabelBehavior.always,
         suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
@@ -306,7 +347,7 @@ class _BodyState extends State<Body> {
               return mapControllerWidget(context);
             });
       },
-      onSaved: (newValue) => mapAddress = newValue,
+      //onSaved: (newValue) => mapAddress = newValue,
       onChanged: (value) {
         if (value.isNotEmpty) {
           removeError(error: kMapAddressNullError);
@@ -358,10 +399,13 @@ class _BodyState extends State<Body> {
                         readOnly: true,
                         onTap: () {
                           if (myLocation == null) {
-                            getCurrentLocation();
+                            var dd = getCurrentLocation();
+                            if (dd == null) {
+                              popAlert(context);
+                            }
                           } else {
                             _editingControllerMapAddress.text = myLocation;
-                            Future.delayed(Duration(milliseconds: 2000));
+                            Future.delayed(Duration(milliseconds: 500));
                             popAlert(context);
                           }
                         },
@@ -399,23 +443,31 @@ class _BodyState extends State<Body> {
   }
 
   // creating and getting location map
-  onMapCreated(GoogleMapController ctr) async {
-    _mapController = ctr;
-    //getCurrentLocation();
+  onMapCreated(GoogleMapController ctr) {
+    try {
+      //_controller.complete(ctr);
+      _mapController = ctr;
+      getCurrentLocation();
+    } catch (e) {
+      print(e);
+    }
   }
 
   // getting user current location
   getCurrentLocation() async {
+    getMarker().then((data) async {
+      bitmapIcon = await BitmapDescriptor.fromBytes(data);
+    });
     try {
       location = await _locationTracker.getLocation();
       updateMarker(location);
       if (_locationSubscription != null) {
         _locationSubscription.cancel();
       }
-
       return _locationSubscription =
           _locationTracker.onLocationChanged.listen((newLocalData) async {
-        if (_mapController != null) {
+        if (_controller != null) {
+          updateMarker(newLocalData);
           _mapController.animateCamera(
             CameraUpdate.newCameraPosition(
               new CameraPosition(
@@ -445,12 +497,10 @@ class _BodyState extends State<Body> {
           } catch (e) {
             print('Reverse Geo coding exception = ' + e.toString());
           }
-
-          setState(() {
-            _showMyAddress.text = myLocation;
-          });
-          updateMarker(newLocalData);
         }
+        setState(() {
+          _showMyAddress.text = myLocation;
+        });
       });
     } on PlatformException catch (e) {
       if (e.code == 'PERMISSION_DENIED') {
@@ -462,19 +512,21 @@ class _BodyState extends State<Body> {
   // displaying marker on map current location
 
   void updateMarker(LocationData newLocalData) async {
-    final bitmapIcon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(48, 48)), 'assets/icons/geo-alt.svg');
     LatLng latLng = LatLng(newLocalData.latitude, newLocalData.longitude);
-    this.setState(() {
-      marker = Marker(
-          markerId: MarkerId("home"),
-          position: latLng,
-          rotation: newLocalData.headingAccuracy,
-          draggable: false,
-          zIndex: 2,
-          anchor: Offset(0.6, 0.9),
-          icon: bitmapIcon);
-    });
+    if (bitmapIcon != null) {
+      this.setState(() {
+        marker = Marker(
+            markerId: MarkerId("home"),
+            position: latLng,
+            rotation: newLocalData.headingAccuracy,
+            draggable: false,
+            zIndex: 2,
+            anchor: Offset(0.6, 0.9),
+            icon: bitmapIcon);
+      });
+    } else {
+      print('marker is null hy');
+    }
   }
 
   getImage() async {
@@ -506,19 +558,7 @@ class _BodyState extends State<Body> {
     Navigator.of(context).pop();
   }
 
-  uploadImageFileToDatabase() async {
-    String url;
-    // var imageFile =
-    // await FirebaseStorage.instance.ref().child("path").child("/.jpg");
-    // UploadTask task = imageFile.putFile(file);
-    // TaskSnapshot snapshot = await task;
-    // //for downloading
-    // String url = await snapshot.ref.getDownloadURL();
-    // await FirebaseFirestore.instance
-    //     .collection("images")
-    //     .doc()
-    //     .set({"imageUrl": url});
-    // print(url);
+  Future<String> uploadImageFileToDatabase() async {
     final String fileName = path.basename(file.path);
     firebase_storage.Reference reference = firebase_storage
         .FirebaseStorage.instance
@@ -527,30 +567,14 @@ class _BodyState extends State<Body> {
         .child(fileName);
     UploadTask task2 = reference.putFile(file);
     TaskSnapshot snapshot2 = await task2;
-    snapshot2.ref
-        .getDownloadURL()
-        .whenComplete(() => print('image url +>>>>' + url));
-    // final metadata = firebase_storage.SettableMetadata(
-    //     contentType: 'image/jpg',
-    //     customMetadata: {'picked-file-path': file.path});
-
-    // reference.putFile(file, metadata).whenComplete(
-    //       () => setState(() {
-    //         _load = false;
-    //       }),
-    //     );
-
-    // try {
-    //   reference.getDownloadURL().then((value) => url = value);
-    // } catch (e) {
-    //   print('download image');
-    //   print(e);
-    //   print('download image');
-    // }
-
-    setState(() {
-      _uploadedFileURL = url;
-    });
+    //for downloading url
+    await snapshot2.ref.getData();
+    if (snapshot2 != null) {
+      return url = await snapshot2.ref.getDownloadURL();
+    } else {
+      print('snapshot2 =');
+    }
+    return null;
   }
 
   uploadDataToFirebaseDatabase(String url) async {
@@ -561,61 +585,52 @@ class _BodyState extends State<Body> {
     String dateT = datetime.toString();
     String latI = lat.toString();
     String lngI = lng.toString();
-    print('Name =' +
-        _editingControllerName.text +
-        '| businessType =' +
-        _editingControllerBusType.text +
-        '| businessDescription =' +
-        _editingControllerBusDescription.text +
-        '| Address =' +
-        _editingControllerMapAddress.text +
-        '| joinTimeStamp =' +
-        dateT +
-        '|LatLng =' +
-        latI +
-        ' , ' +
-        lngI +
-        '| PicUrl =' +
-        url +
-        '| Fcm Token =' +
-        token);
-    try {
-      await _firebaseDatabase.child(uuid).set({
-        'name': _editingControllerName.text,
-        'businessType': _editingControllerBusType.text,
-        'businessDescription': _editingControllerBusDescription.text,
-        'address': _editingControllerMapAddress.text,
-        'completeOrders': '0',
-        'onlineStatus': 'online',
-        'blockByAdmin': '0',
-        'joinTimeStamp': dateT,
-        'lat': latI,
-        'lng': lngI,
-        'picUrl': url,
-        'fcm': 'token',
-        'uuid': uuid
-      });
-      MyInfoBar.success(
-          message: '', icon: Icon(Icons.message), context: context);
+    if (_editingControllerName.text == null ||
+        _editingControllerBusType == null ||
+        _editingControllerBusDescription == null ||
+        _editingControllerMapAddress.text == null ||
+        dateT == null ||
+        latI == null ||
+        lngI == null ||
+        token == null ||
+        uuid == null) {
+      try {
+        await _firebaseDatabase.child(uuid).set({
+          'name': _editingControllerName.text,
+          'businessType': _editingControllerBusType.text,
+          'businessDescription': _editingControllerBusDescription.text,
+          'address': _editingControllerMapAddress.text,
+          'completeOrders': '0',
+          'onlineStatus': 'online',
+          'blockByAdmin': '0',
+          'joinTimeStamp': dateT,
+          'lat': latI,
+          'lng': lngI,
+          'picUrl': url,
+          'fcm': token,
+          'uuid': uuid
+        }).whenComplete(() {
+          setState(() {
+            _load = false;
+          });
+          Navigator.pushNamed(context, HomeScreen.routeName);
+        });
+      } catch (e) {
+        print('upload user failed he' + e);
+        setState(() {
+          _load = false;
+        });
+      }
+    } else {
       setState(() {
         _load = false;
       });
-    } catch (e) {
-      print('upload user');
-      print(e);
-      print('upload user');
+      print('failed to create user');
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    token = getDeviceToken();
   }
 
   getDeviceToken() {
     FirebaseMessaging.instance.getToken().then((value) {
-      print('Last Token =' + value.toString());
       return value;
     });
   }
@@ -632,12 +647,14 @@ class _BodyState extends State<Body> {
     if (_locationSubscription != null) {
       _locationSubscription.cancel();
     }
+    if (_mapController != null) {
+      _mapController.dispose();
+    }
     _editingControllerMapAddress.dispose();
     _editingControllerBusDescription.dispose();
     _editingControllerBusType.dispose();
     _editingControllerName.dispose();
     _showMyAddress.dispose();
-    _mapController.dispose();
     super.dispose();
   }
 }

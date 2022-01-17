@@ -58,7 +58,23 @@ dependencies:
   geolocator: ^7.7.1
   geocode: ^1.0.1
   flutter_native_splash: ^1.3.3
+  permission_handler: ^8.3.0
 
+#dependency_overrides:
+
+
+
+flutter_native_splash:
+  color: "#42a5f5"
+  branding: "assets/icons/Cash.png"
+  branding_mode: bottom
+  #color_dark: "#042a49"
+  background_image_dark: "assets/images/Profile Image.png"
+  image_dark: "assets/images/splash_1.png"
+  android: true
+  ios: false
+  web: false
+  android_gravity: center
 
 dev_dependencies:
   flutter_test:

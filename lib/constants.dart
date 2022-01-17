@@ -24,6 +24,11 @@ final headingStyle = TextStyle(
 final fcmKey =
     "AAAA0bwCa1A:APA91bGOUCaHQX2DHALNIw_og0DpW7u-X9UA4s1__YpGy7HalbrnUoADyIGxAScLN6zffOTNYQ7mj8Xpt4o2n00LDx7oOcknUnUmzXkl4AhwtvjiHtcRftAWndxP6PnU7FlGgikhCS2A";
 final apiKey = "AIzaSyATqxhwVJGlltWIGxXWECV4BxbLrAABCWE";
+final appId = "";
+final messagingSenderId = "";
+final projectId = "";
+
+
 const defaultDuration = Duration(milliseconds: 250);
 
 // Form Error
