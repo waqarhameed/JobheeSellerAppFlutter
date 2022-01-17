@@ -33,13 +33,12 @@ class _OtpVerificationState extends State<OtpVerification> {
 
   @override
   void initState() {
-
     super.initState();
     verifyPhoneNumber();
   }
+
   @override
   void didChangeDependencies() {
-
     super.didChangeDependencies();
   }
 
@@ -142,14 +141,15 @@ class _OtpVerificationState extends State<OtpVerification> {
       ],
     );
   }
- //03214577488
+
+  // 321457748
   void verifyPhoneNumber() async {
     await _auth.verifyPhoneNumber(
         phoneNumber: "${widget.codeDigits + widget.phone}",
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential).then((value) async {
             if (_auth.currentUser.uid != null) {
-              print(" verification completed " + value.toString());
+              print(" verification completed " + value.user.toString());
               Navigator.of(context)
                   .push(MaterialPageRoute(builder: (c) => HomeScreen()));
             }
@@ -177,4 +177,6 @@ class _OtpVerificationState extends State<OtpVerification> {
         },
         timeout: Duration(seconds: 30));
   }
+
+  void blockedByAdmin() {}
 }

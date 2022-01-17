@@ -76,7 +76,7 @@ class _BodyState extends State<Body> {
 
   getMarker() async {
     ByteData byteData =
-        await DefaultAssetBundle.of(context).load("assets/icons/geo-alt.svg");
+        await DefaultAssetBundle.of(context).load("assets/images/location.png");
     return byteData.buffer.asUint8List();
   }
 
@@ -84,6 +84,7 @@ class _BodyState extends State<Body> {
   void initState() {
     super.initState();
     getCurrentUser();
+    askForLocationPermission();
   }
 
   @override
@@ -91,7 +92,7 @@ class _BodyState extends State<Body> {
     super.didChangeDependencies();
     token = getDeviceToken();
     // Ask for permission
-    askForLocationPermission();
+    //askForLocationPermission();
     // GoogleMap(
     //   myLocationEnabled: true,
     //   initialCameraPosition: null,
@@ -235,8 +236,8 @@ class _BodyState extends State<Body> {
                                 setState(() {
                                   _load = false;
                                 });
-                                Navigator.pushNamed(
-                                    context, HomeScreen.routeName);
+                                // Navigator.pushNamed(
+                                //     context, HomeScreen.routeName);
                               }
                             }
                           },
@@ -395,23 +396,23 @@ class _BodyState extends State<Body> {
                       width: SizeConfig.screenWidth - 23,
                       height: SizeConfig.screenHeight * 0.1,
                       child: TextFormField(
-                        controller: _showMyAddress,
+                       controller: _showMyAddress,
                         readOnly: true,
                         onTap: () {
-                          if (myLocation == null) {
+                          if (_showMyAddress.text == null) {
                             var dd = getCurrentLocation();
                             if (dd == null) {
                               popAlert(context);
                             }
                           } else {
-                            _editingControllerMapAddress.text = myLocation;
+                            _editingControllerMapAddress.text = _showMyAddress.text;
                             Future.delayed(Duration(milliseconds: 500));
                             popAlert(context);
                           }
                         },
-                        onChanged: (value) {
-                          _showMyAddress.text = value;
-                        },
+                        // onChanged: (value) {
+                        //   _showMyAddress.text = value;
+                        // },
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -447,7 +448,9 @@ class _BodyState extends State<Body> {
     try {
       //_controller.complete(ctr);
       _mapController = ctr;
-      getCurrentLocation();
+      if (_mapController != null) {
+        getCurrentLocation();
+      }
     } catch (e) {
       print(e);
     }
