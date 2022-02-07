@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:jobheeseller/screens/complete_profile/complete_profile_screen.dart';
 
@@ -50,5 +51,8 @@ class MyDatabaseService {
       return null;
     }
     return null;
+  }
+  static Future<String> getDeviceToken() async{
+    return  await FirebaseMessaging.instance.getToken();
   }
 }

@@ -21,12 +21,12 @@ final headingStyle = TextStyle(
   height: 1.5,
 );
 
-final fcmKey =
+final serverKey =
     "AAAA0bwCa1A:APA91bGOUCaHQX2DHALNIw_og0DpW7u-X9UA4s1__YpGy7HalbrnUoADyIGxAScLN6zffOTNYQ7mj8Xpt4o2n00LDx7oOcknUnUmzXkl4AhwtvjiHtcRftAWndxP6PnU7FlGgikhCS2A";
 final apiKey = "AIzaSyATqxhwVJGlltWIGxXWECV4BxbLrAABCWE";
-final appId = "";
-final messagingSenderId = "";
-final projectId = "";
+final appId = "1:900802440016:android:dea79f37b123ab59a5da55";
+final messagingSenderId = "900802440016";
+final projectId = "job-hee";
 
 const defaultDuration = Duration(milliseconds: 250);
 

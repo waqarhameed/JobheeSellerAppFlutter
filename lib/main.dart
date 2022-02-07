@@ -1,13 +1,12 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:jobheeseller/handler/firebase_notification_handler.dart';
 import 'package:jobheeseller/routes.dart';
-import 'package:jobheeseller/screens/home/home_screen.dart';
 import 'package:jobheeseller/screens/splash/splash_screen.dart';
 import 'package:jobheeseller/theme.dart';
 
@@ -15,13 +14,8 @@ import 'constants.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
-const AndroidNotificationChannel channel = const AndroidNotificationChannel(
-    'high_importance_channel', // id
-    'High Importance Notifications', // title
-    enableLights: true,
-    enableVibration: true,
-    importance: Importance.high,
-    playSound: true);
+
+AndroidNotificationChannel channel;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +28,16 @@ Future<void> main() async {
 
   // for background notification
   FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
+  if (!kIsWeb) {
+    channel = AndroidNotificationChannel(
+        'high_importance_channel', // id
+        'High Importance Notifications', // title
+        description: 'your channel description',
+        enableLights: true,
+        enableVibration: true,
+        importance: Importance.high,
+        playSound: true);
+  }
   // for foreground notification
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
@@ -76,14 +80,13 @@ class MyApp extends StatelessWidget {
 }
 
 class InitializerWidget extends StatefulWidget {
+  static String routeName = "/";
+
   @override
   _InitializerWidgetState createState() => _InitializerWidgetState();
 }
 
 class _InitializerWidgetState extends State<InitializerWidget> {
-  FirebaseAuth _auth;
-  User _user;
-
   FirebaseNotifications firebaseNotifications = FirebaseNotifications();
 
   @override
@@ -93,9 +96,6 @@ class _InitializerWidgetState extends State<InitializerWidget> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       firebaseNotifications.setupFirebase(context);
     });
-    _auth = FirebaseAuth.instance;
-    _user = _auth.currentUser;
-    print('User Current User is ==' + _user.toString());
     isLoading = false;
   }
 
@@ -107,9 +107,7 @@ class _InitializerWidgetState extends State<InitializerWidget> {
               child: CircularProgressIndicator(),
             ),
           )
-        : _user == null
-            ? SplashScreen()
-            : HomeScreen();
+        : SplashScreen();
   }
 }
 
@@ -131,5 +129,5 @@ Future<void> _backgroundMessageHandler(RemoteMessage message) async {
   print('Handle Background Service : $message');
   dynamic data = message.data['data'];
 
-  FirebaseNotifications.showNotification(data['title'], data['body']);
+  FirebaseNotifications.showNotification(data);
 }

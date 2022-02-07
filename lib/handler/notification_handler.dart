@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationHandler {
@@ -16,10 +17,10 @@ class NotificationHandler {
         onSelectNotification: onSelectNotification);
   }
 
-  static Future onSelectNotification(String payload) {
-    if(payload != null)
-      print('Get  payload: $payload ' );
-
+  static Future onSelectNotification(String route) async {
+    if (route != null) {
+      print('Get  payload: $route ');
+    }
+    return Navigator.of(myContext).pushNamed(route);
   }
-
 }
