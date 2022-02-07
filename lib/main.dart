@@ -40,15 +40,7 @@ Future<void> main() async {
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
-  await FirebaseAppCheck.instance.activate(
-    webRecaptchaSiteKey: 'recaptcha-v3-site-key',
-  );
-  String token = await FirebaseAppCheck.instance.getToken();
-  print(token);
-  FirebaseAppCheck.instance.onTokenChange.listen((token) {
-    print(token);
-  });
-  await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  await FirebaseAppCheck.instance.activate();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
       overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
 
@@ -92,15 +84,15 @@ class _InitializerWidgetState extends State<InitializerWidget> {
   FirebaseAuth _auth;
   User _user;
 
- // FirebaseNotifications firebaseNotifications = FirebaseNotifications();
+  FirebaseNotifications firebaseNotifications = FirebaseNotifications();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    //   firebaseNotifications.setupFirebase(context);
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      firebaseNotifications.setupFirebase(context);
+    });
     _auth = FirebaseAuth.instance;
     _user = _auth.currentUser;
     print('User Current User is ==' + _user.toString());

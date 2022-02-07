@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:jobheeseller/components/simple_snake_bar.dart';
+import 'package:jobheeseller/models/seller_model.dart';
 import 'package:jobheeseller/screens/home/home_screen.dart';
 import 'package:jobheeseller/screens/user_register/user_registration_screen.dart';
 import 'package:pinput/pin_put/pin_put.dart';
@@ -25,7 +28,8 @@ class _OtpVerificationState extends State<OtpVerification> {
   final FocusNode _pinOtpCodeFocus = FocusNode();
   FirebaseAuth _auth = FirebaseAuth.instance;
   String verificationCode;
-
+  DatabaseReference _firebaseDatabase =
+      FirebaseDatabase.instance.ref().child(kJob).child(kSeller);
   BoxDecoration pinOtpCodeDecoration = BoxDecoration(
       color: Colors.blueAccent,
       borderRadius: BorderRadius.circular(10.0),
@@ -34,12 +38,12 @@ class _OtpVerificationState extends State<OtpVerification> {
   @override
   void initState() {
     super.initState();
-    verifyPhoneNumber();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    verifyPhoneNumber();
   }
 
   @override
@@ -90,19 +94,41 @@ class _OtpVerificationState extends State<OtpVerification> {
                         .signInWithCredential(PhoneAuthProvider.credential(
                             verificationId: verificationCode, smsCode: pin))
                         .then(
-                      (value) {
+                      (value) async {
                         if (value.user != null) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (c) => UserRegisterScreen()));
+                          if (value.user.uid != null) {
+                            String uuid = value.user.uid;
+                            try {
+                              await _firebaseDatabase
+                                  .child(uuid)
+                                  .once()
+                                  .then((event) {
+                                final data = new Map<String, dynamic>.from(
+                                    event.snapshot.value);
+                                final result = Seller.fromJson(data);
+                                if (result.name != null) {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (c) => HomeScreen()));
+                                } else {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (c) => UserRegisterScreen()));
+                                }
+                              });
+                            } catch (e) {
+                              print(e);
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (c) => UserRegisterScreen()));
+                            }
+                          } else {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (c) => UserRegisterScreen()));
+                          }
                         }
                       },
                     );
                   } catch (e) {
                     FocusScope.of(context).unfocus();
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text("Invalid OTP"),
-                      duration: Duration(seconds: 3),
-                    ));
+                    MySnakeBar.createSnackBar('Invalid OTP', context);
                   }
                 },
               ),
@@ -111,6 +137,7 @@ class _OtpVerificationState extends State<OtpVerification> {
             GestureDetector(
               onTap: () {
                 // OTP code resend
+                MySnakeBar.createSnackBar('We send the new code', context);
                 verifyPhoneNumber();
                 buildTimer();
               },
@@ -144,39 +171,43 @@ class _OtpVerificationState extends State<OtpVerification> {
 
   // 321457748
   void verifyPhoneNumber() async {
-    await _auth.verifyPhoneNumber(
-        phoneNumber: "${widget.codeDigits + widget.phone}",
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential).then((value) async {
-            if (_auth.currentUser.uid != null) {
-              print(" verification completed " + value.user.toString());
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (c) => HomeScreen()));
-            }
-          });
-          print("verification completed");
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Unable to verify pin code'),
-            duration: Duration(seconds: 6),
-          ));
-          print(" unable to code send ");
-        },
-        codeSent: (String vId, int resendCode) {
-          setState(() {
-            verificationCode = vId;
-            print("code send " + verificationCode);
-          });
-        },
-        codeAutoRetrievalTimeout: (String vId) {
-          setState(() {
-            verificationCode = vId;
-            print(" Time out hey");
-          });
-        },
-        timeout: Duration(seconds: 30));
-  }
+    try {
+      await _auth.verifyPhoneNumber(
+          phoneNumber: "${widget.codeDigits + widget.phone}",
+          verificationCompleted: (PhoneAuthCredential credential) async {
+            await _auth.signInWithCredential(credential).then((value) async {
+              if (_auth.currentUser.uid != null) {
+                print(" verification completed " + value.user.toString());
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (c) => HomeScreen()));
+              }
+            }).onError((error, stackTrace) {
+              print('verification error ' + error);
+            });
+            print("verification completed");
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            MySnakeBar.createSnackBar('Unable to verify pin code', context);
+            print(" unable to code send ");
+          },
+          codeSent: (String vId, int resendCode) {
+            MySnakeBar.createSnackBar('code send', context);
 
-  void blockedByAdmin() {}
+            setState(() {
+              verificationCode = vId;
+              print("code send " + verificationCode);
+            });
+          },
+          codeAutoRetrievalTimeout: (String vId) {
+            MySnakeBar.createSnackBar('code Auto Retrieval Timeout', context);
+            setState(() {
+              verificationCode = vId;
+              print(" Time out hey");
+            });
+          },
+          timeout: Duration(seconds: 30));
+    } catch (e) {
+      MySnakeBar.createSnackBar('Exception on ' + e.toString(), context);
+    }
+  }
 }

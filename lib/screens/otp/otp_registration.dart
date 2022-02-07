@@ -33,9 +33,7 @@ class _OtpRegistrationState extends State<OtpRegistration> {
   }
 
   bool validateMobileNumber(String value) {
-    String pattern = r'(^(?:[+0]9)?[0-9]{10,12}$)';
-    RegExp regExp = new RegExp(pattern);
-    if (!regExp.hasMatch(value)) {
+    if (!mobilePattern.hasMatch(value)) {
       return false;
     }
     return true;

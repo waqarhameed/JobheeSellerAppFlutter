@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:jobheeseller/components/about_us.dart';
 import 'package:jobheeseller/components/app_updates.dart';
-import 'package:jobheeseller/components/coustom_bottom_nav_bar.dart';
 import 'package:jobheeseller/components/help.dart';
 import 'package:jobheeseller/components/share_with_friends.dart';
 import 'package:jobheeseller/constants.dart';
@@ -10,39 +9,35 @@ import 'package:jobheeseller/screens/complete_profile/complete_profile_screen.da
 import 'package:jobheeseller/screens/home/components/user_page.dart';
 import 'package:jobheeseller/screens/payments/your_payments.dart';
 import 'package:jobheeseller/screens/splash/splash_screen.dart';
+import 'package:jobheeseller/utils/image_assets.dart';
 
 class NavigationDrawer extends StatelessWidget {
+  final name;
+  final urlImage;
   final padding = EdgeInsets.symmetric(horizontal: 20);
   final _auth = FirebaseAuth.instance;
 
+  NavigationDrawer({Key key, this.name, this.urlImage}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    final name = 'test1';
-    final email = 'test@gamil.com';
-    final urlImage =
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPlqk-tNmFTjT7q_edAjaYLU5qf2cFUM9vfrweUbqnS_58LqF7AMp67KVdslIubuzy9b4&usqp=CAU';
-
     return Drawer(
       child: Container(
         color: kPrimaryWhiteColor,
         child: ListView(
           children: [
             buildHeader(
-              urlImage: urlImage,
               name: name,
-              email: email,
+              urlImage: urlImage,
               onClicked: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => UserPage(
-                    name: 'Himura Kenshan',
+                    name: name,
                     urlImage: urlImage,
                   ),
                 ),
               ),
             ), // end buildHeader
-            const SizedBox(
-              height: 30,
-            ),
             Container(
               padding: padding,
               color: kPrimaryWhiteColor,
@@ -52,7 +47,6 @@ class NavigationDrawer extends StatelessWidget {
                     color: Colors.black,
                     height: 2,
                   ),
-                  const SizedBox(height: 10),
                   buildMenuItem(
                     text: 'Profile',
                     icon: Icons.account_circle_outlined,
@@ -78,11 +72,9 @@ class NavigationDrawer extends StatelessWidget {
                     icon: Icons.update,
                     onClicked: () => selectedItem(context, 4),
                   ),
-                  SizedBox(height: 10),
                   Divider(
                     color: Colors.black,
                   ),
-                  SizedBox(height: 10),
                   buildMenuItem(
                     text: 'About us',
                     icon: Icons.home,
@@ -94,7 +86,7 @@ class NavigationDrawer extends StatelessWidget {
                     onClicked: () => selectedItem(context, 6),
                   ),
                   Divider(color: Colors.black),
-                  SizedBox(height: 10),
+                  SizedBox(height: 5),
                   Container(
                     child: Text(
                       'v 1.0.0',
@@ -115,33 +107,34 @@ class NavigationDrawer extends StatelessWidget {
   }
 
   Widget buildHeader({
-    String urlImage,
     String name,
-    String email,
+    String urlImage,
     VoidCallback onClicked,
   }) =>
       InkWell(
         onTap: onClicked,
         child: Container(
           color: kPrimaryWhiteColor,
-          padding: padding.add(EdgeInsets.symmetric(vertical: 40)),
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
           child: Row(
             children: [
-              CircleAvatar(radius: 50, backgroundImage: NetworkImage(urlImage)),
+              CircleAvatar(
+                  radius: 60,
+                  backgroundImage: (urlImage == null)
+                      ? AssetImage(ImagesAsset.profileImage)
+                      : NetworkImage(urlImage)),
               SizedBox(width: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(fontSize: 20, color: Colors.black),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    email,
-                    style: TextStyle(fontSize: 14, color: Colors.black),
-                  ),
-                ],
+              Container(
+                child: name != null
+                    ? Text(
+                        name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 20, color: Colors.black),
+                      )
+                    : Text(
+                        'No data',
+                        style: TextStyle(fontSize: 20, color: Colors.black),
+                      ),
               ),
             ],
           ),

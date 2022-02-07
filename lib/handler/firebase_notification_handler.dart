@@ -30,11 +30,16 @@ class FirebaseNotifications {
       sound: true,
     );
     print('Settings ${settings.authorizationStatus}');
-    _firebaseMessaging.getToken().then((token) => print('My Token : $token'));
+    // _firebaseMessaging
+    //     .getToken()
+    //     .then((token) => print('My Token : $token'))
+    //     .onError((error, stackTrace) {
+    //   print('MyToken Error :' + error);
+    // });
 
-    _firebaseMessaging
-        .subscribeToTopic('subscribe to me')
-        .whenComplete(() => print('subscribed ok'));
+    // _firebaseMessaging
+    //     .subscribeToTopic('subscribe to me')
+    //     .whenComplete(() => print('subscribed ok'));
     FirebaseMessaging.onMessage.listen((event) {
       print('My Remote Message: $event');
       if (Platform.isAndroid) {

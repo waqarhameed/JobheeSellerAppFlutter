@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jobheeseller/constants.dart';
+import 'package:jobheeseller/utils/image_assets.dart';
 
 class UserPage extends StatelessWidget {
   final String name;
@@ -11,15 +13,17 @@ class UserPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.pink,
-        title: Text(name),
+        backgroundColor: kPrimaryColor,
+        title: name != null ? Text(name) : Text('No data'),
       ),
-      body: Image.network(
-        urlImage,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-      ),
+      body: urlImage != null
+          ? Image.network(
+              urlImage,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+            )
+          : Center(child: Text('No Image'),),
     );
   }
 }

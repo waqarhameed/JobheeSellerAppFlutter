@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:jobheeseller/screens/complete_profile/complete_profile_screen.dart';
 
-class Service {
+class MyDatabaseService {
   final auth = FirebaseAuth.instance;
 
   createUser(email, password, context) async {
@@ -37,5 +37,18 @@ class Service {
             content: Text(e.toString()),
           );
         });
+  }
+
+  static Future<String> getCurrentUser() async {
+    try {
+      var currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        return currentUser.uid.toString();
+      }
+    } catch (e) {
+      print('current user error hy+ ' + e);
+      return null;
+    }
+    return null;
   }
 }

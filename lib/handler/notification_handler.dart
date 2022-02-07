@@ -9,7 +9,7 @@ class NotificationHandler {
 
   static void initNotification(BuildContext context) {
     myContext = context;
-    var initAndroid = AndroidInitializationSettings("@drawable/jobhee.png");
+    var initAndroid = AndroidInitializationSettings("jobhee");
 
     var initSetting = InitializationSettings(android: initAndroid);
     flutterLocalNotificationPlugin.initialize(initSetting,
