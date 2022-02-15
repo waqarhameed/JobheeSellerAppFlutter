@@ -27,7 +27,6 @@ class NavHeader extends StatefulWidget {
 }
 
 class _NavHeaderState extends State<NavHeader> {
-  bool _load = false;
   int currentIndex = 0;
 
   String name;
@@ -56,9 +55,7 @@ class _NavHeaderState extends State<NavHeader> {
         name: name,
         urlImage: myUrl,
       ),
-      body: _load
-          ? Center(child: CircularProgressIndicator())
-          : <Widget>[
+      body: <Widget>[
               CurrentOrder(),
               CompletedOrders(),
             ][currentIndex],
@@ -105,7 +102,6 @@ class _NavHeaderState extends State<NavHeader> {
   }
 
   void drawerHeaderData() async {
-    _load = true;
     DatabaseReference _firebaseDatabase =
         FirebaseDatabase.instance.ref().child(kJob).child(kSeller);
     String uid = await MyDatabaseService.getCurrentUser();
@@ -118,7 +114,6 @@ class _NavHeaderState extends State<NavHeader> {
           myUrl = result.picUrl;
         });
       });
-      _load = false;
     }
   }
 }

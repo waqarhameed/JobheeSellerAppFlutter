@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:jobheeseller/components/simple_snake_bar.dart';
 import 'package:jobheeseller/constants.dart';
 import 'package:jobheeseller/screens/otp/components/otp_verification.dart';
 import 'package:jobheeseller/size_config.dart';
@@ -19,14 +21,20 @@ class _OtpRegistrationState extends State<OtpRegistration> {
       showErrorDialog(context, 'Contact number can\'t be empty.');
     } else if (validateMobileNumber(_controller.text) == true) {
       String contact = _controller.text;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (c) => OtpVerification(
-            phone: contact,
-            codeDigits: countryCode,
+      final check = InternetConnectionChecker().hasConnection;
+      if(check != null){
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (c) => OtpVerification(
+              phone: contact,
+              codeDigits: countryCode,
+            ),
           ),
-        ),
-      );
+        );
+      }else{
+        MySnakeBar.createSnackBar(Colors.red,'No Internet Connections', context);
+      }
+
     } else {
       showErrorDialog(context, 'Please enter valid mobile number');
     }

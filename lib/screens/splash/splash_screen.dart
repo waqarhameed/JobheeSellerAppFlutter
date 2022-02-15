@@ -19,7 +19,7 @@ class SplashScreen extends StatelessWidget {
         pre_backPress = DateTime.now();
         if (cantExit) {
           //show snack bar
-          MySnakeBar.createSnackBar('press back button again to exit', context);
+          MySnakeBar.createSnackBar(Colors.greenAccent,'press back button again to exit', context);
           return false;
         } else {
           return true;

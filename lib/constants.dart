@@ -13,6 +13,12 @@ const kSecondaryColor = Color(0xFF979797);
 const kTextColor = Color(0xFF757575);
 
 const kAnimationDuration = Duration(milliseconds: 200);
+final customTextStyle = TextStyle(
+  fontSize: getProportionateScreenWidth(14),
+  fontWeight: FontWeight.bold,
+  color: Colors.black,
+  height: 1.5,
+);
 
 final headingStyle = TextStyle(
   fontSize: getProportionateScreenWidth(28),
@@ -35,6 +41,17 @@ final RegExp emailValidatorRegExp =
     RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 final RegExp textPattern = RegExp('[a-z A-Z]');
 final RegExp mobilePattern = RegExp(r'(^(?:[+0]9)?[0-9]{10,12}$)');
+
+const String ORDER_STATUS_MSG_NEW_ORDER = "New Order";
+const String ORDER_STATUS_MSG_PRICE_ENTERED = "Price Entered";
+const String ORDER_STATUS_MSG_PRICE_ACCEPTED = "Price Accepted";
+const String ORDER_STATUS_MSG_LOCATION_REQUESTED = "Location Requested";
+const String ORDER_STATUS_MSG_LOCATION_GRANTED = "Location Granted";
+const String ORDER_STATUS_DELIVERY_STARTED = "Delivery Started";
+const String ORDER_STATUS_DELIVERY_COMPLETED = "Delivery Completed";
+const String ORDER_STATUS_PAYMENT_GIVEN = "Payment Given";
+const String ORDER_STATUS_ORDER_CANCELED = "Order Canceled";
+
 const String kEmailNullError = "Please Enter your email";
 const String kInvalidEmailError = "Please Enter Valid Email";
 const String kPassNullError = "Please Enter your password";
